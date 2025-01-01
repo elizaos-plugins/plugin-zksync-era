@@ -13,5 +13,24 @@
   },
   "peerDependencies": {
     "whatwg-url": "7.1.0"
+  },
+  "pluginType": "elizaos:plugin:1.0.0",
+  "pluginParameters": {
+    "type": "object",
+    "required": ["zksyncAddress", "zksyncPrivateKey"],
+    "properties": {
+      "zksyncAddress": {
+        "type": "string",
+        "description": "ZKSync address"
+      },
+      "zksyncPrivateKey": {
+        "type": "string",
+        "description": "ZKSync private key"
+      }
+    }
+  },
+  "pluginEnv": {
+    "ZKSYNC_ADDRESS": "zksyncAddress",
+    "ZKSYNC_PRIVATE_KEY": "zksyncPrivateKey"
   }
 }
