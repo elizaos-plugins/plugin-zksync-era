@@ -1,5 +1,5 @@
 {
-    "name": "@elizaos/plugin-zksync-era",
+    "name": "@elizaos-plugins/plugin-zksync-era",
     "version": "0.1.8+build.1",
     "type": "module",
     "main": "dist/index.js",
