@@ -3965,17 +3965,15 @@ import { normalize } from "viem/ens";
 
 // src/utils/validateContext.ts
 import { isAddress as isAddress2 } from "viem";
-var ValidateContext = class {
-  static transferAction(content) {
-    const { tokenAddress, recipient, amount } = content;
-    const areTypesValid = typeof tokenAddress === "string" && typeof recipient === "string" && (typeof amount === "string" || typeof amount === "number");
-    if (!areTypesValid) {
-      return false;
-    }
-    return [tokenAddress, recipient].every(
-      (address) => isAddress2(address, { strict: false })
-    );
+var transferAction = (content) => {
+  const { tokenAddress, recipient, amount } = content;
+  const areTypesValid = typeof tokenAddress === "string" && typeof recipient === "string" && (typeof amount === "string" || typeof amount === "number");
+  if (!areTypesValid) {
+    return false;
   }
+  return [tokenAddress, recipient].every(
+    (address) => isAddress2(address, { strict: false })
+  );
 };
 
 // src/constants/index.ts
@@ -3990,7 +3988,7 @@ var ERC20_OVERRIDE_INFO = {
 // src/hooks/useGetAccount.ts
 import { privateKeyToAccount } from "viem/accounts";
 var useGetAccount = (runtime) => {
-  const PRIVATE_KEY = runtime.getSetting("ZKSYNC_PRIVATE_KEY");
+  const PRIVATE_KEY = runtime.getSetting("ZKSYNC_PRIVATE_KEY") || "";
   return privateKeyToAccount(`0x${PRIVATE_KEY}`);
 };
 
@@ -4059,15 +4057,16 @@ var TransferAction = {
     return true;
   },
   description: "Transfer tokens from the agent's wallet to another address",
-  handler: async (runtime, message, state, _options, callback) => {
+  handler: async (runtime, message, initialState, _options, callback) => {
     elizaLogger.log("Starting ZKsync Era SEND_TOKEN handler...");
-    if (!state) {
-      state = await runtime.composeState(message);
+    let currentState = initialState;
+    if (!currentState) {
+      currentState = await runtime.composeState(message);
     } else {
-      state = await runtime.updateRecentMessageState(state);
+      currentState = await runtime.updateRecentMessageState(initialState);
     }
     const transferContext = composeContext({
-      state,
+      state: currentState,
       template: transferTemplate
     });
     const content = (await generateObject({
@@ -4091,7 +4090,7 @@ var TransferAction = {
         elizaLogger.error("Error resolving ENS name:", error);
       }
     }
-    if (!ValidateContext.transferAction(content)) {
+    if (!transferAction(content)) {
       elizaLogger.error("Invalid content for TRANSFER_TOKEN action.");
       if (callback) {
         callback({
@@ -4130,11 +4129,11 @@ var TransferAction = {
         });
       }
       elizaLogger.success(
-        "Transfer completed successfully! Transaction hash: " + hash
+        `Transfer completed successfully! Transaction hash: ${hash}`
       );
       if (callback) {
         callback({
-          text: "Transfer completed successfully! Transaction hash: " + hash,
+          text: `Transfer completed successfully! Transaction hash: ${hash}`,
           content: {}
         });
       }
